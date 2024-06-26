@@ -1,4 +1,4 @@
-export interface Patient {
+export interface PatientModel {
     id?: string;
     resourceType: "Patient";
     name: Array<{

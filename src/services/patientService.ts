@@ -1,10 +1,11 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { toast } from 'react-toastify';
+import { Bundle, PatientModel } from '../models/patient';
 axios.defaults.baseURL = import.meta.env.VITE_API_URL;
 
 const sleep = () => new Promise(resolve => setTimeout(resolve, 500));
 
-const responseBody = (response: AxiosResponse) => response.data;
+const responseBody = <T>(response: {data: T}) => response.data;
 
 axios.interceptors.response.use(async response => {
     if(import.meta.env.DEV) await sleep();
@@ -38,24 +39,29 @@ axios.interceptors.response.use(async response => {
 })
 
 const requests = {
-    get: (url: string, params?: URLSearchParams) => axios.get(url, {params}).then(responseBody),
-    post: (url: string, body: object) => axios.post(url, body).then(responseBody),
-    put: (url: string, body: object) => axios.put(url, body).then(responseBody),
-    del: (url: string) => axios.delete(url).then(responseBody),
-    postForm: (url: string, data: FormData) => axios.post(url, data, {
-        headers: {'Content-Type': 'multipart/form-data'}
-    }).then(responseBody),
-    putForm: (url: string, data: FormData) => axios.put(url, data, {
-        headers: {'Content-Type': 'multipart/form-data'}
-    }).then(responseBody),
+    get: <T>(url: string): Promise<T> => axios.get<T>(url).then(responseBody),
+    post: <T>(url: string, body: object) => axios.post<T>(url, body).then(responseBody),
+    put: <T>(url: string, body: object) => axios.put<T>(url, body).then(responseBody),
+    del: <T>(url: string) => axios.delete<T>(url).then(responseBody),
 }
 
 const Patient = {
-    list: (params?: URLSearchParams) => requests.get('Patient', params),
-    getPatientById: (id: string) => requests.get(`Patient/${id}`),
-    addPatientRecord: (values: any) => requests.post('Patient', values),
-    updatePatientRecord: (id: string, values: any) => requests.put(`Patient/${id}`, values),
-    removePatient: (id: string) => requests.del(`Patient/${id}`)
+    list: () => requests.get<Bundle<PatientModel>>('/Patient'),
+    getPatientById: (id: string) => requests.get<PatientModel>(`/Patient/${id}`),
+    addPatientRecord: (values: any) => requests.post('/Patient', values),
+    updatePatientRecord: (id: string, values: any) => requests.put(`/Patient/${id}`, values),
+    removePatient: (id: string) => requests.del(`/Patient/${id}`),
+    searchPatients: (query: string): Promise<Bundle<PatientModel>> => {
+      const queryParams = new URLSearchParams();
+      if (query) {
+        if (/^\d+$/.test(query)) {
+            queryParams.append('id', query);
+        } else {
+            queryParams.append('name', query);
+        }
+      }
+      return requests.get(`/Patient/search?${queryParams.toString()}`);
+    },
 }
 
 

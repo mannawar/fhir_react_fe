@@ -1,12 +1,12 @@
 
 import { List, ListItem, ListItemText, ListItemSecondaryAction, IconButton } from '@mui/material';
-import {Patient} from '../models/patient';
+import {PatientModel} from '../models/patient';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 interface PatientListProps{
-    patients: Patient[];
-    onEdit: (patient: Patient) => void;
+    patients: PatientModel[];
+    onEdit: (patient: PatientModel) => void;
     onDelete: (id: string) => void;
 }
 
@@ -16,7 +16,7 @@ const PatientList = ({ patients, onEdit, onDelete}: PatientListProps) => {
             {patients.map((patient) => (
                 <ListItem key={patient.id}>
                     <ListItemText
-                        primary={`${patient.name[0].given.join(' ')} ${patient.name[0]?.family}`}
+                        primary={`${patient.name[0].given && patient.name[0].given.join(' ')} ${patient.name[0]?.family}`}
                         secondary={patient.birthDate}
                         />
                         <ListItemSecondaryAction>
